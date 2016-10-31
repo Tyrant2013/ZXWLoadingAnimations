@@ -29,9 +29,10 @@ static CGFloat const kPointHeight                           = 30.0f;
         _secondPointColor = [UIColor redColor];
         _thirdPointColor = [UIColor blueColor];
         [self __addThreeCirclePoint];
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-            [self startAnimation];
-        });
+//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3.0f * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+//            [self startAnimation];
+//        });
+        [self startAnimation];
     }
     return self;
 }
@@ -73,15 +74,17 @@ static CGFloat const kPointHeight                           = 30.0f;
     [self.points addObject:thirdPoint];
 }
 
-//- (void)drawRect:(CGRect)rect {
-////    UIBezierPath *drawPath = [self secondPointPath];
+- (void)drawRect:(CGRect)rect {
+    UIBezierPath *drawPath = [self firstPointPath];
+//    UIBezierPath *drawPath = [self secondPointPath];
 //    UIBezierPath *drawPath = [self thirdPointPath];
-//    CGContextRef context = UIGraphicsGetCurrentContext();
-//    CGContextAddPath(context, drawPath.CGPath);
-//    [[UIColor whiteColor] setStroke];
-//    CGContextSetLineWidth(context, 1.0f);
-//    CGContextStrokePath(context);
-//}
+//    UIBezierPath *drawPath = [self testPath];
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextAddPath(context, drawPath.CGPath);
+    [[UIColor whiteColor] setStroke];
+    CGContextSetLineWidth(context, 1.0f);
+    CGContextStrokePath(context);
+}
 
 - (void)startAnimation {
     [self setAnimationForPoint:self.points.firstObject
@@ -99,13 +102,13 @@ static CGFloat const kPointHeight                           = 30.0f;
 }
 
 - (void)setAnimationForPoint:(CALayer *)layer path:(UIBezierPath *)path startColor:(UIColor *)sColor endColor:(UIColor *)eColor {
-    NSTimeInterval duration = 2.0f;
+    NSTimeInterval duration = 1.0f;
     CAKeyframeAnimation *animation = [CAKeyframeAnimation animationWithKeyPath:@"position"];
     animation.path = path.CGPath;
     animation.duration = duration;
     animation.repeatCount = INT_MAX;
     animation.removedOnCompletion = NO;
-    animation.calculationMode = kCAAnimationCubic;
+//    animation.calculationMode = kCAAnimationCubic;
     animation.fillMode = kCAFillModeForwards;
     animation.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseInEaseOut];
     [layer addAnimation:animation forKey:@"position"];
@@ -132,8 +135,9 @@ static CGFloat const kPointHeight                           = 30.0f;
     [firstPath addArcWithCenter:(CGPoint){centerX + kPointWidth * 2, centerY}
                          radius:30.0f
                      startAngle:M_PI
-                       endAngle:M_PI * 2
+                       endAngle:0.0f
                       clockwise:NO];
+    
     return firstPath;
 }
 
@@ -161,6 +165,18 @@ static CGFloat const kPointHeight                           = 30.0f;
                        endAngle:M_PI
                       clockwise:NO];
     return thirdPath;
+}
+
+- (UIBezierPath *)testPath {
+    CALayer *firstPoint = self.points.firstObject;
+    CGFloat centerX = CGRectGetMaxX(firstPoint.frame) + kPointWidth / 2;
+    CGFloat centerY = CGRectGetMinY(firstPoint.frame) + kPointHeight / 2;
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path moveToPoint:(CGPoint){centerX - kPointWidth, centerY}];
+    [path addCurveToPoint:(CGPoint){centerX + kPointWidth * 3, centerY}
+            controlPoint1:(CGPoint){centerX, CGRectGetMinY(firstPoint.frame) - 30.0f}
+            controlPoint2:(CGPoint){centerX + kPointWidth * 1.5, CGRectGetMaxY(firstPoint.frame) + 30.0f}];
+    return path;
 }
 
 @end
